@@ -66,4 +66,13 @@ public class OSCMessage
 			for (int i = 0; i < objects.size(); i++) stream.write(objects.get(i));
 		}
 	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder builder = new StringBuilder();
+		builder.append(address);
+		for (Object arg : arguments) builder.append(" " + arg);
+		return builder.toString();
+	}
 }
