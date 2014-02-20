@@ -72,7 +72,10 @@ public class OSCMessage
 	{
 		StringBuilder builder = new StringBuilder();
 		builder.append(address);
-		for (Object arg : arguments) builder.append(" " + arg);
+		if (arguments != null)
+		{
+			for (Object arg : arguments) builder.append(" " + arg);
+		}
 		return builder.toString();
 	}
 }
