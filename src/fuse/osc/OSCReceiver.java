@@ -55,7 +55,7 @@ public class OSCReceiver extends OSCPort implements Runnable
 			try
 			{
 				socket.receive(packet);
-				OSCMessage message = converter.convert(buffer);
+				OSCMessage message = converter.convert(buffer, packet.getLength());
 				for (OSCListener listener : listeners) listener.acceptMessage(message);
 			}
 			catch (IOException e)

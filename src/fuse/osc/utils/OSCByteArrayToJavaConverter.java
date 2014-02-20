@@ -21,15 +21,17 @@ import fuse.osc.OSCMessage;
 public class OSCByteArrayToJavaConverter
 {
 	private byte[] bytes;
+	private int bytesLength;
 	private int streamPosition;
 
 	/**
 	 * Convert a byte array into an OSCMessage.
 	 * @return an OSCMessage
 	 */
-	public OSCMessage convert(byte[] byteArray)
+	public OSCMessage convert(byte[] byteArray, int bytesLength)
 	{
 		bytes = byteArray;
+		this.bytesLength = bytesLength;
 		streamPosition = 0;
 		return convertMessage(); 
 	}
@@ -211,7 +213,7 @@ public class OSCByteArrayToJavaConverter
 	private int lengthOfCurrentString()
 	{
 		int i = 0;
-		while (bytes[streamPosition + i] != 0) i++;
+		while (bytes[streamPosition + i] != 0 && streamPosition + i < bytesLength) i++;
 		return i;
 	}
 
