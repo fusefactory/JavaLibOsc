@@ -17,9 +17,9 @@ public class OSCSender extends OSCPort
 		socket = new DatagramSocket();
 	}
 	
-	public void send(OSCMessage message) throws IOException
+	public void send(OSCPacket oscPacket) throws IOException
 	{
-		byte[] byteArray = message.getByteArray();
+		byte[] byteArray = oscPacket.getByteArray();
 		DatagramPacket packet = new DatagramPacket(byteArray, byteArray.length, ip, port);
 		socket.send(packet);
 	}

@@ -26,7 +26,7 @@ public abstract class OSCPacket
 	
 	public byte[] getByteArray()
 	{
-		if (byteArray == null) computeByteArray();
+		if (byteArray == null) byteArray = computeByteArray();
 		return byteArray;
 	}
 	
@@ -38,7 +38,8 @@ public abstract class OSCPacket
 	{
 		OSCJavaToByteArrayConverter stream = new OSCJavaToByteArrayConverter();
 		stream.setCharset(charset);
-		return computeByteArray(stream);
+		byte[] bytes = computeByteArray(stream);
+		return bytes;
 	}
 	
 	/**
