@@ -14,13 +14,13 @@ public class OSCBundle extends OSCPacket
 	/**
 	 * 2208988800 seconds -- includes 17 leap years
 	 */
-	private static final long SECONDS_FROM_1900_TO_1970 = 2208988800L;
+	public static final long SECONDS_FROM_1900_TO_1970 = 2208988800L;
 
 	/**
 	 * The Java representation of an OSC timestamp with the semantics of
 	 * "immediately".
 	 */
-	private static final Date TIMESTAMP_IMMEDIATE = new Date(0);
+	public static final Date TIMESTAMP_IMMEDIATE = new Date(0);
 	
 	private Date timestamp;
 	private List<OSCPacket> packets;

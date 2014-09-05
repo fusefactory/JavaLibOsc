@@ -3,6 +3,7 @@ package fuse.osc.utils;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import fuse.osc.OSCBundle;
@@ -64,7 +65,8 @@ public class OSCByteArrayToJavaConverter
 	{
 		// skip the "#bundle " stuff
 		streamPosition = BUNDLE_START.length() + 1;
-		OSCBundle bundle = new OSCBundle();
+		Date timestamp = readTimeTag();
+		OSCBundle bundle = new OSCBundle(timestamp);
 		OSCByteArrayToJavaConverter converter = new OSCByteArrayToJavaConverter();
 		converter.setCharset(charset);
 		while (streamPosition < bytesLength)
@@ -238,6 +240,61 @@ public class OSCByteArrayToJavaConverter
 		intBytes[3] = bytes[streamPosition++];
 		BigInteger intBits = new BigInteger(intBytes);
 		return new Integer(intBits.intValue());
+	}
+	
+	/**
+	 * Reads the time tag and convert it to a Java Date object.
+	 * A timestamp is a 64 bit number representing the time in NTP format.
+	 * The first 32 bits are seconds since 1900, the second 32 bits are
+	 * fractions of a second.
+	 * @return a {@link Date}
+	 */
+	private Date readTimeTag()
+	{
+		byte[] secondBytes = new byte[8];
+		byte[] fractionBytes = new byte[8];
+		for (int i = 0; i < 4; i++)
+		{
+			// clear the higher order 4 bytes
+			secondBytes[i] = 0;
+			fractionBytes[i] = 0;
+		}
+		// while reading in the seconds & fraction, check if
+		// this timetag has immediate semantics
+		boolean isImmediate = true;
+		for (int i = 4; i < 8; i++)
+		{
+			secondBytes[i] = bytes[streamPosition++];
+			if (secondBytes[i] > 0) isImmediate = false;
+		}
+		for (int i = 4; i < 8; i++) {
+			fractionBytes[i] = bytes[streamPosition++];
+			if (i < 7)
+			{
+				if (fractionBytes[i] > 0) isImmediate = false;
+			}
+			else
+			{
+				if (fractionBytes[i] > 1) isImmediate = false;
+			}
+		}
+
+		if (isImmediate) return OSCBundle.TIMESTAMP_IMMEDIATE;
+
+		long secsSince1900 = new BigInteger(secondBytes).longValue();
+		long secsSince1970 = secsSince1900 - OSCBundle.SECONDS_FROM_1900_TO_1970;
+
+		// no point maintaining times in the distant past
+		if (secsSince1970 < 0) secsSince1970 = 0;
+		long fraction = (new BigInteger(fractionBytes).longValue());
+
+		// this line was cribbed from jakarta commons-net's NTP TimeStamp code
+		fraction = (fraction * 1000) / 0x100000000L;
+
+		// I do not know where, but I'm losing 1ms somewhere...
+		fraction = (fraction > 0) ? fraction + 1 : 0;
+		long millisecs = (secsSince1970 * 1000) + fraction;
+		return new Date(millisecs);
 	}
 	
 	/**
