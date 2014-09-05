@@ -1,16 +1,11 @@
 package fuse.osc;
 
-import java.util.Arrays;
-import java.util.List;
-
 import fuse.osc.utils.OSCJavaToByteArrayConverter;
 
-public class OSCMessage
+public class OSCMessage extends OSCPacket
 {
 	private String address;
 	private Object[] arguments;
-	private boolean isByteArrayComputed;
-	private byte[] byteArray;
 	
 	public OSCMessage(String address)
 	{
@@ -33,40 +28,39 @@ public class OSCMessage
 		return arguments;
 	}
 	
-	public byte[] getByteArray()
+	@Override
+	protected byte[] computeByteArray(OSCJavaToByteArrayConverter stream)
 	{
-		if (!isByteArrayComputed)
-		{
-			computeByteArray();
-			isByteArrayComputed = true;
-		}
-		return byteArray;
-	}
-	
-	private void computeByteArray()
-	{
-		OSCJavaToByteArrayConverter stream = new OSCJavaToByteArrayConverter();
 		computeAddressByteArray(stream);
 		computeArgumentsByteArray(stream);
-		byteArray = stream.toByteArray();
+		return stream.toByteArray();
 	}
 	
+	/**
+	 * Convert the address into a byte array.
+	 * Used internally only.
+	 * @param stream where to write the address to
+	 */
 	private void computeAddressByteArray(OSCJavaToByteArrayConverter stream)
 	{
 		stream.write(address);
 	}
 	
+	/**
+	 * Convert the arguments into a byte array.
+	 * Used internally only.
+	 * @param stream where to write the arguments to
+	 */
 	private void computeArgumentsByteArray(OSCJavaToByteArrayConverter stream)
 	{
 		stream.write(',');
 		if (arguments != null)
 		{
-			List<Object> objects = Arrays.asList(arguments);
-			stream.writeTypes(objects);
-			for (int i = 0; i < objects.size(); i++) stream.write(objects.get(i));
+			stream.writeTypes(arguments);
+			for (Object argument : arguments) stream.write(argument);
 		}
 	}
-	
+
 	@Override
 	public String toString()
 	{

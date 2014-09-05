@@ -4,23 +4,21 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
 
 import fuse.osc.utils.OSCByteArrayToJavaConverter;
 
 public class OSCReceiver extends OSCPort implements Runnable
 {
 	private boolean isListening;
-	private List<OSCListener> listeners;
 	private OSCByteArrayToJavaConverter converter;
+	private OSCPacketDispatcher dispatcher;
 	
 	public OSCReceiver(int port) throws SocketException
 	{
 		this.port = port;
 		socket = new DatagramSocket(port);
-		listeners = new ArrayList<OSCListener>();
 		converter = new OSCByteArrayToJavaConverter();
+		dispatcher = new OSCPacketDispatcher();
 	}
 	
 	public void startListening()
@@ -42,7 +40,7 @@ public class OSCReceiver extends OSCPort implements Runnable
 	
 	public void addListener(OSCListener listener)
 	{
-		listeners.add(listener);
+		dispatcher.addListener(listener);
 	}
 	
 	@Override
@@ -55,8 +53,8 @@ public class OSCReceiver extends OSCPort implements Runnable
 			try
 			{
 				socket.receive(packet);
-				OSCMessage message = converter.convert(buffer, packet.getLength());
-				for (OSCListener listener : listeners) listener.acceptMessage(message);
+				OSCPacket oscPacket = converter.convert(buffer, packet.getLength());
+				dispatcher.dispatchPacket(oscPacket);
 			}
 			catch (IOException e)
 			{

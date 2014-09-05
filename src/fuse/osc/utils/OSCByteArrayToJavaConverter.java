@@ -1,10 +1,13 @@
 package fuse.osc.utils;
 
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import fuse.osc.OSCBundle;
 import fuse.osc.OSCMessage;
+import fuse.osc.OSCPacket;
 
 /**
  * Utility class to convert a byte array conforming to the OSC byte stream format
@@ -20,20 +23,65 @@ import fuse.osc.OSCMessage;
  */
 public class OSCByteArrayToJavaConverter
 {
+	private final String BUNDLE_START = "#bundle";
+	private final char BUNDLE_IDENTIFIER = BUNDLE_START.charAt(0);
+	
 	private byte[] bytes;
+	private Charset charset;
 	private int bytesLength;
 	private int streamPosition;
+	
+	/**
+	 * Sets the character set used to decode message addresses
+	 * and string parameters.
+	 * @param charset the desired character-encoding-set to be used by this converter
+	 */
+	public void setCharset(Charset charset)
+	{
+		this.charset = charset;
+	}
 
 	/**
 	 * Convert a byte array into an OSCMessage.
 	 * @return an OSCMessage
 	 */
-	public OSCMessage convert(byte[] byteArray, int bytesLength)
+	public OSCPacket convert(byte[] bytes, int bytesLength)
 	{
-		bytes = byteArray;
+		this.bytes = bytes;
 		this.bytesLength = bytesLength;
-		streamPosition = 0;
-		return convertMessage(); 
+		this.streamPosition = 0;
+		
+		if (bytes[0] == BUNDLE_IDENTIFIER) return convertBundle();
+		else return convertMessage(); 
+	}
+	
+	/**
+	 * Converts the byte array to a bundle.
+	 * Assumes that the byte array is a bundle.
+	 * @return a bundle containing the data specified in the byte stream
+	 */
+	private OSCBundle convertBundle()
+	{
+		// skip the "#bundle " stuff
+		streamPosition = BUNDLE_START.length() + 1;
+		OSCBundle bundle = new OSCBundle();
+		OSCByteArrayToJavaConverter converter = new OSCByteArrayToJavaConverter();
+		converter.setCharset(charset);
+		while (streamPosition < bytesLength)
+		{
+			// recursively read through the stream and convert packets you find
+			Integer packetLength = readInteger();
+			
+			if (packetLength == 0) throw new IllegalArgumentException("Packet length may not be 0");
+			else if ((packetLength % 4) != 0) throw new IllegalArgumentException("Packet length has to be a multiple of 4, is:" + packetLength);
+			
+			byte[] packetBytes = new byte[packetLength];
+			System.arraycopy(bytes, streamPosition, packetBytes, 0, packetLength);
+			streamPosition += packetLength;
+			OSCPacket packet = converter.convert(packetBytes, packetLength);
+			bundle.addPacket(packet);
+		}
+		return bundle;
 	}
 
 	/**
@@ -130,7 +178,7 @@ public class OSCByteArrayToJavaConverter
 	 * Read a char from the byte stream.
 	 * @return a Character
 	 */
-	private Object readChar()
+	private Character readChar()
 	{
 		return new Character((char) bytes[streamPosition++]);
 	}
@@ -139,16 +187,16 @@ public class OSCByteArrayToJavaConverter
 	 * Read a double &mdash; this just read a float.
 	 * @return a Double
 	 */
-	private Object readDouble()
+	private Double readDouble()
 	{
-		return readFloat();
+		return Double.valueOf(readFloat());
 	}
 
 	/**
 	 * Read a float from the byte stream.
 	 * @return a Float
 	 */
-	private Object readFloat()
+	private Float readFloat()
 	{
 		byte[] floatBytes = new byte[4];
 		floatBytes[0] = bytes[streamPosition++];
@@ -163,7 +211,7 @@ public class OSCByteArrayToJavaConverter
 	 * Read a Big Integer (64 bit int) from the byte stream.
 	 * @return a BigInteger
 	 */
-	private Object readBigInteger()
+	private BigInteger readBigInteger()
 	{
 		byte[] longintBytes = new byte[8];
 		longintBytes[0] = bytes[streamPosition++];
@@ -181,7 +229,7 @@ public class OSCByteArrayToJavaConverter
 	 * Read an Integer (32 bit int) from the byte stream.
 	 * @return an Integer
 	 */
-	private Object readInteger()
+	private Integer readInteger()
 	{
 		byte[] intBytes = new byte[4];
 		intBytes[0] = bytes[streamPosition++];
@@ -213,7 +261,7 @@ public class OSCByteArrayToJavaConverter
 	private int lengthOfCurrentString()
 	{
 		int i = 0;
-		while (bytes[streamPosition + i] != 0 && streamPosition + i < bytesLength) i++;
+		while (bytes[streamPosition + i] != 0) i++;
 		return i;
 	}
 

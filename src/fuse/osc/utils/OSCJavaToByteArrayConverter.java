@@ -3,7 +3,7 @@ package fuse.osc.utils;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
-import java.util.List;
+import java.nio.charset.Charset;
 
 /**
  * OSCJavaToByteArrayConverter is a helper class that translates
@@ -12,12 +12,43 @@ import java.util.List;
  */
 public class OSCJavaToByteArrayConverter
 {
-	private ByteArrayOutputStream stream = new ByteArrayOutputStream();
-	private byte[] intBytes = new byte[4];
-	private byte[] longintBytes = new byte[8];
-	private char[] stringChars = new char[2048];
-	private byte[] stringBytes = new byte[2048];
+	private ByteArrayOutputStream stream;
+	private Charset charset;
+	private byte[] intBytes;
+	private byte[] longintBytes;
+	private char[] stringChars;
+	private byte[] stringBytes;
 
+	public OSCJavaToByteArrayConverter()
+	{
+		stream = new ByteArrayOutputStream();
+		charset = Charset.defaultCharset();
+		intBytes = new byte[4];
+		longintBytes = new byte[8];
+		stringChars = new char[2048];
+		stringBytes = new byte[2048];
+	}
+	
+	/**
+	 * Returns the character set used to encode message addresses
+	 * and string parameters.
+	 * @return the character-encoding-set used by this converter
+	 */
+	public Charset getCharset()
+	{
+		return charset;
+	}
+
+	/**
+	 * Sets the character set used to encode message addresses
+	 * and string parameters.
+	 * @param charset the desired character-encoding-set to be used by this converter
+	 */
+	public void setCharset(Charset charset)
+	{
+		this.charset = charset;
+	}
+	
 	/**
 	 * Line up the Big end of the bytes to a 4 byte boundry
 	 * @return byte[]
@@ -173,7 +204,7 @@ public class OSCJavaToByteArrayConverter
 	 * Write types for the arguments (use a vector for jdk1.1 compatibility, rather than an ArrayList).
 	 * @param objects the arguments to an OSCMessage
 	 */
-	public void writeTypes(List<Object> objects)
+	public void writeTypes(Object[] objects)
 	{
 		for (Object object : objects)
 		{
