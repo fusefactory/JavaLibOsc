@@ -15,6 +15,8 @@ public class OSCMessage extends OSCPacket
 	public OSCMessage(String address, Object[] arguments)
 	{
 		this.address = address;
+		
+		if (arguments == null) arguments = new Object[0];
 		this.arguments = arguments;
 	}
 	
