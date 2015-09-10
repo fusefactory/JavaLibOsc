@@ -13,7 +13,7 @@ public class SenderTest
 		{
 			OSCSender sender = new OSCSender(InetAddress.getByName("127.0.0.1"), 7000);
 			sender.send(new OSCMessage("/prova/", null));
-			sender.send(new OSCMessage("/prova/", new Object[] { true, "Paolo" }));
+			sender.send(new OSCMessage("/prova/", new Object[] { true, "paolofuse" }));
 			sender.send(new OSCMessage("/prova/", null));
 		}
 		catch (Exception e)
