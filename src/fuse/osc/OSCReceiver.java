@@ -43,6 +43,11 @@ public class OSCReceiver extends OSCPort implements Runnable
 		dispatcher.addListener(listener);
 	}
 	
+	public void removeListener(OSCListener listener)
+	{
+		dispatcher.removeListener(listener);
+	}
+	
 	@Override
 	public void run()
 	{

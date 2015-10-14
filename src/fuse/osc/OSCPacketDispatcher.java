@@ -18,6 +18,11 @@ public class OSCPacketDispatcher
 		listeners.add(listener);
 	}
 	
+	public void removeListener(OSCListener listener)
+	{
+		listeners.remove(listener);
+	}
+	
 	public void dispatchPacket(OSCPacket packet)
 	{
 		dispatchPacket(packet, null);
