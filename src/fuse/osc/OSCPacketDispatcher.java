@@ -1,8 +1,8 @@
 package fuse.osc;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class OSCPacketDispatcher
 {
@@ -10,7 +10,7 @@ public class OSCPacketDispatcher
 	
 	public OSCPacketDispatcher()
 	{
-		listeners = new ArrayList<OSCListener>();
+		listeners = new CopyOnWriteArrayList<OSCListener>();
 	}
 	
 	public void addListener(OSCListener listener)
