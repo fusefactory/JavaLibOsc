@@ -13,8 +13,13 @@ public class OSCReceiver extends OSCPort implements Runnable {
 	private OSCPacketDispatcher dispatcher;
 
 	public OSCReceiver(int port) throws SocketException {
+	  this(port, false);
+	}
+
+	public OSCReceiver(int port, boolean reuseAddress) throws SocketException {
 		this.port = port;
 		socket = new DatagramSocket(port);
+		if (reuseAddress) socket.setReuseAddress(true);
 		converter = new OSCByteArrayToJavaConverter();
 		dispatcher = new OSCPacketDispatcher();
 	}
