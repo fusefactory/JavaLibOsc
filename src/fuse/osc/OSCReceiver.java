@@ -51,7 +51,7 @@ public class OSCReceiver extends OSCPort implements Runnable
 	@Override
 	public void run()
 	{
-		byte[] buffer = new byte[1536];
+		byte[] buffer = new byte[3072];
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 		while (isListening)
 		{
