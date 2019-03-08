@@ -54,6 +54,14 @@ public class Confirm {
     //     // return c;
     // }
 
+    public static String GetConfirmHost(OSCMessage msg) {
+      return Info.GetIp(GetConfirmationInfo(msg));
+    }
+
+    public static int GetConfirmPort(OSCMessage msg) {
+      return Info.GetPort(GetConfirmationInfo(msg));
+    }
+
     public static String GetConfirmationInfo(OSCMessage msg) {
         Object[] args = msg.arguments();
         if (args.length < 1) return null;
