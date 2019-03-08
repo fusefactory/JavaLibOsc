@@ -15,7 +15,7 @@ class Info {
     private static String GetPortString(String info) {
         if (info == null) return null;
         String[] parts = info.split(":");
-        return parts.length == 3 && parts[0].equals("confirm") ? parts[1] : null;
+        return parts.length == 3 && parts[0].equals("confirm") ? parts[2] : null;
     }
 
     public static int GetPort(String info) {
@@ -66,12 +66,20 @@ public class Confirm {
         Object[] args = msg.arguments();
         if (args.length < 1) return null;
         Object arg = args[args.length-1];
-        return String.class.isInstance(args) ? (String)arg : null;
+        // String result = null;
+        // try {
+        //     result = (String)arg;
+        // } catch(Exception e) {
+        //     result = null;
+        // }
+        // return result;
+        return (arg instanceof String) ? (String)arg : null;
     }
 
     public static OSCMessage CreateConfirmation(OSCMessage msg) {
-        String ip = Info.GetIp(GetConfirmationInfo(msg));
-        int port = Info.GetPort(GetConfirmationInfo(msg));
+        String info = GetConfirmationInfo(msg);
+        String ip = Info.GetIp(info);
+        int port = Info.GetPort(info);
         if (ip == null || port == Info.INVALID_PORT) return null;
 
         Object[] args = msg.arguments();
