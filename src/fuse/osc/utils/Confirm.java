@@ -3,6 +3,16 @@ package fuse.osc.utils;
 import java.util.ArrayList;
 import fuse.osc.OSCMessage;
 
+/**
+ * Helper class that provides methods to extract addressee information (host/port)
+ * from a confirm info string.
+ *
+ * An confirm info string has the following format:
+ * "confirm:<host>:port"
+ * for example:
+ * "confirm:127.0.0.1:8080"
+ * "confirm:192.168.1.100:8001"
+ */
 class Info {
     public static final int INVALID_PORT = -1;
 
@@ -31,28 +41,23 @@ class Info {
     }
 }
 
+/**
+ * The Confirm class provides helper methods for implementing a confirmation
+ * response protocol on OSC.
+ *
+ * The 'protocol' basically means that sender of OSC messages
+ * that wants to receive a confirmation repsonse, adds a string-based argument
+ * to the message to which it wants a confirmation response. This argument contains
+ * the information necessary to send a confirmation (the host and port to which to send it).
+ *
+ * The receiver that supports this protocol is expected to respond with a confirmation
+ * to the specified host/port and the confirmation is expected to be a copy of the
+ * original message, with a "/confirm" postfix to the message's address and minus
+ * the last argument that contains the confirm details.
+ */
 public class Confirm {
 
     public static final String POSTFIX = "/confirm";
-
-    // public static OSCMessage CreateConfirmable(OSCMessage original, string ip, int port) {
-    //     // var c = new OSCMessage(original.Address);
-    //     //
-    //     // foreach(var arg in original.Data) {
-    //     //     switch (arg.GetType().Name) {
-    //     //         case "Int32": c.Append<int>((int)arg); break;
-    //     //         case "Int64": c.Append<long>((long)arg); break;
-    //     //         case "Single":c.Append<float>((float)arg); break;
-    //     //         case "Double":c.Append<double>((double)arg); break;
-    //     //         case "String":c.Append<string>((string)arg); break;
-    //     //         case "Byte[]":c.Append<byte>((byte)arg); break;
-    //     //         default: throw new System.Exception("Unsupported OSC argument type.");
-    //     //     }
-    //     // }
-    //     //
-    //     // c.Append<string>("confirm:"+ip+":"+port.ToString());
-    //     // return c;
-    // }
 
     public static String GetConfirmHost(OSCMessage msg) {
       return Info.GetIp(GetConfirmationInfo(msg));
@@ -76,21 +81,30 @@ public class Confirm {
         return (arg instanceof String) ? (String)arg : null;
     }
 
-    public static OSCMessage CreateConfirmation(OSCMessage msg) {
-        String info = GetConfirmationInfo(msg);
-        String ip = Info.GetIp(info);
-        int port = Info.GetPort(info);
+    public static OSCMessage CreateConfirmation(OSCMessage confirmableMessage) {
+        String ip = GetConfirmHost(confirmableMessage);
+        int port = GetConfirmPort(confirmableMessage);
+        // did not find valid confirm addressee info; cannot create confirmation
         if (ip == null || port == Info.INVALID_PORT) return null;
 
-        Object[] args = msg.arguments();
+        // copy all argumnets from the confirmable message to the confirmation,
+        // except for the last one (which contains confirm details)
+        Object[] args = confirmableMessage.arguments();
         ArrayList<Object> newargs = new ArrayList<Object>();
 
         for(int i=0; i<args.length-1; i++) {
             newargs.add(args[i]);
         }
 
-        OSCMessage c = new OSCMessage(msg.address()+POSTFIX, newargs.toArray());
+        // assemble message with confirm postfix
+        OSCMessage c = new OSCMessage(confirmableMessage.address()+POSTFIX, newargs.toArray());
         return c;
     }
+
+    // public static OSCMessage CreateConfirmable(OSCMessage original, String confirmHost, int confirmPort) {
+    //  // TODO: this method should return a new OSCMessage that's a clone
+    //  // of the original, with a string-based argument appended to it that contains
+    //  // the confirmation host and port.
+    // }
 
 } // class Confirm
